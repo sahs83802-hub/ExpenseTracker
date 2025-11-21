@@ -12,26 +12,25 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
-// ✅ CORS – allow your Vite frontend
+// CORS – allow Vite (local) + Vercel (production)
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://expense-tracker-uw3l.vercel.app",
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173", // your frontend
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: false, // we use Bearer token, not cookies
+    origin: allowedOrigins, // allow both URLs
+    credentials: true,
   })
 );
-
-// ❌ IMPORTANT: DO NOT put things like "* http://localhost:5173/" as a route.
-// ❌ Remove any line like: app.options("* http://localhost:5173/", cors());
-// ❌ If you had: app.options("*", cors()); just delete it – not needed.
 
 // Body parsers & logger
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
-// Routes
+// ROUTES
 app.get("/", (req, res) => {
   res.send("Expense Tracker API running");
 });
@@ -41,7 +40,7 @@ app.use("/api/income", require("./routes/incomeRoutes"));
 app.use("/api/expense", require("./routes/expenseRoutes"));
 app.use("/api/dashboard", require("./routes/dashboardRoutes"));
 
-// 404
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
